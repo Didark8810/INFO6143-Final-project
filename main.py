@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import streamlit as st
 import requests
+from datetime import datetime, timedelta
 
 # Función para leer datos
 def read_weather_data(uploaded_file):
@@ -57,6 +58,55 @@ def fetch_weather_data(api_key, city):
         print(f"Error: {response.status_code}")
         return None
 
+# Función para obtener datos históricos de Open-Meteo
+def fetch_open_meteo_data(latitude, longitude, start_date, end_date):
+    url = "https://archive-api.open-meteo.com/v1/archive"
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "start_date": start_date.strftime("%Y-%m-%d"),
+        "end_date": end_date.strftime("%Y-%m-%d"),
+        "hourly": "temperature_2m,relative_humidity_2m",
+        "timezone": "auto"
+    }
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Error: {response.status_code}")
+        return None
+
+# Procesar datos en un DataFrame
+def process_open_meteo_data(data):
+    hourly_data = data.get("hourly", {})
+    dates = hourly_data.get("time", [])
+    temperatures = hourly_data.get("temperature_2m", [])
+    humidities = hourly_data.get("relative_humidity_2m", [])
+
+    records = []
+    for date, temp, hum in zip(dates, temperatures, humidities):
+        records.append({"date": date, "temperature": temp, "humidity": hum})
+    return pd.DataFrame(records)
+
+# Visualizar los datos
+def plot_weather_data(df):
+    plt.figure(figsize=(12, 6))
+
+    # Graficar temperatura
+    plt.plot(df['date'], df['temperature'], label="Temperature (°C)", color='orange', marker='o')
+
+    # Graficar humedad
+    plt.plot(df['date'], df['humidity'], label="Humidity (%)", color='blue', marker='x')
+
+    plt.title("Historical Weather Data from Open-Meteo")
+    plt.xlabel("Date and Time")
+    plt.ylabel("Values")
+    plt.legend()
+    plt.grid(True)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
 # Función principal para la interfaz
 def main():
     st.title("Weather Data Visualizer")
@@ -89,6 +139,31 @@ def main():
                 st.error("No se pudieron obtener los datos. Verifica la ciudad o la API Key.")
         else:
             st.warning("Por favor, ingresa una API Key válida y el nombre de la ciudad.")
+    
+    st.title("Historical Weather Data Viewer (Open-Meteo)")
+    latitude = st.number_input("Latitud", value=0.0, format="%.6f")
+    longitude = st.number_input("Longitud", value=0.0, format="%.6f")
+    start_date = st.date_input("Fecha de inicio")
+    end_date = st.date_input("Fecha de fin")
+
+    if st.button("Obtener datos históricos"):
+        if latitude and longitude and start_date and end_date:
+            start_date_dt = datetime.combine(start_date, datetime.min.time())
+            end_date_dt = datetime.combine(end_date, datetime.min.time())
+            st.info("Obteniendo datos históricos...")
+            data = fetch_open_meteo_data(latitude, longitude, start_date_dt, end_date_dt)
+            if data:
+                df = process_open_meteo_data(data)
+                st.write("Datos obtenidos:")
+                st.dataframe(df)
+
+                # Mostrar gráficos
+                st.write("Gráficos de temperatura y humedad:")
+                st.line_chart(df.set_index("date")[["temperature", "humidity"]])
+            else:
+                st.error("No se pudieron obtener los datos históricos. Verifica los parámetros.")
+        else:
+            st.warning("Por favor, completa todos los campos.")
 
 
 if __name__ == '__main__':
