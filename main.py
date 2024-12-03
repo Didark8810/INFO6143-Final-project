@@ -3,59 +3,53 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import requests
 
-# Leer un archivo CSV
-def load_weather_data(file_path):
+# Función para leer datos
+def read_weather_data(uploaded_file):
     try:
-        data = pd.read_csv(file_path)
-        print("Datos cargados exitosamente.")
-        return data
-    except FileNotFoundError:
-        print("Archivo no encontrado. Por favor, verifica la ruta.")
-    except pd.errors.EmptyDataError:
-        print("El archivo está vacío.")
+        if uploaded_file.name.endswith('.csv'):
+            return pd.read_csv(uploaded_file)
+        elif uploaded_file.name.endswith('.json'):
+            return pd.read_json(uploaded_file)
+        else:
+            raise ValueError("Unsupported file format. Use CSV or JSON.")
     except Exception as e:
-        print(f"Error al cargar el archivo: {e}")
-        return None
+        st.error(f"Error reading file: {e}")
+        return pd.DataFrame()
 
-# Guardar datos en CSV
-def save_weather_data(data, file_path):
-    try:
-        data.to_csv(file_path, index=False)
-        print(f"Datos guardados en {file_path}.")
-    except Exception as e:
-        print(f"Error al guardar los datos: {e}")
+# Función para limpiar datos
+def clean_data(data):
+    return data.fillna({'temperature': data['temperature'].mean(),
+                        'humidity': data['humidity'].mean()})
 
-# Manejo de datos faltantes
-def handle_missing_data(data):
-    data.fillna(data.mean(), inplace=True)
-    return data
-
-# Graficar temperatura a lo largo del tiempo
-def plot_temperature(data):
-    plt.figure(figsize=(10, 6))
-    plt.plot(data['date'], data['temperature'], marker='o', label='Temperature')
-    plt.xlabel('Date')
-    plt.ylabel('Temperature (°C)')
-    plt.title('Temperature Over Time')
-    plt.legend()
-    plt.grid()
-    plt.show()
-
-# Gráfico de dispersión (Humedad vs Temperatura)
-def scatter_humidity_temperature(data):
+# Función para graficar dispersión
+def plot_scatter(data):
     plt.figure(figsize=(8, 6))
     plt.scatter(data['temperature'], data['humidity'], alpha=0.6, c='blue')
     plt.xlabel('Temperature (°C)')
     plt.ylabel('Humidity (%)')
     plt.title('Humidity vs Temperature')
     plt.grid()
-    plt.show()
+    st.pyplot(plt)
+
+# Función para graficar líneas
+def plot_line(data):
+    plt.figure(figsize=(10, 6))
+    plt.plot(data['date'], data['temperature'], label='Temperature (°C)', marker='o')
+    plt.plot(data['date'], data['humidity'], label='Humidity (%)', marker='x')
+    plt.xlabel('Date')
+    plt.ylabel('Value')
+    plt.title('Weather Data Over Time')
+    plt.legend()
+    plt.grid()
+    st.pyplot(plt)
 
 # Obtener datos desde una API
 def fetch_weather_data(api_key, city):
     #https://openweathermap.org/history
-    #05773f69315d38dbaa3535df8bb04ff9       key
-    url = f"https://history.openweathermap.org/data/2.5/history/city?q=London,UK&appid={api_key}"
+    #577206faeeaec391fc2a40775b0830da       key
+    #577206faeeaec391fc2a40775b0830da
+    #url = f"http://api.openweathermap.org/data/2.5/weather?q=bogota,col&appid=577206faeeaec391fc2a40775b0830da&units=metric"
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
     response = requests.get(url)
     if response.status_code == 200:
         return response.json()
@@ -63,30 +57,23 @@ def fetch_weather_data(api_key, city):
         print(f"Error: {response.status_code}")
         return None
 
-# Interfaz interactiva con Streamlit
+# Función principal para la interfaz
 def main():
     st.title("Weather Data Visualizer")
+    uploaded_file = st.file_uploader("Upload CSV or JSON file", type=["csv", "json"])
     
-    # Subir archivo
-    uploaded_file = st.file_uploader("Sube tu archivo CSV", type=["csv"])
     if uploaded_file:
-        data = pd.read_csv(uploaded_file)
-        st.write("Datos cargados:")
-        st.dataframe(data)
-
-        # Manejo de datos faltantes
-        #data = handle_missing_data(data)
-
-        # Graficar temperatura
-        if st.button("Visualizar temperatura"):
-            st.write("Gráfico de temperatura:")
-            st.line_chart(data['temperature'])
-        
-        # Graficar scatter (Humedad vs Temperatura)
-        if st.button("Gráfico de dispersión (Humedad vs Temperatura)"):
-            st.write("Scatter Plot:")
-            scatter_humidity_temperature(data)
-
+        data = read_weather_data(uploaded_file)
+        if not data.empty:
+            data = clean_data(data)
+            
+            st.write("Cleaned Data:")
+            st.dataframe(data)
+            
+            if st.button("Show Scatter Plot"):
+                plot_scatter(data)
+            if st.button("Show Line Chart"):
+                plot_line(data)
     # Obtener datos desde una API
     st.subheader("Obtener datos desde una API")
     api_key = st.text_input("Ingresa tu API Key de OpenWeatherMap", type="password")
@@ -103,5 +90,6 @@ def main():
         else:
             st.warning("Por favor, ingresa una API Key válida y el nombre de la ciudad.")
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     main()
