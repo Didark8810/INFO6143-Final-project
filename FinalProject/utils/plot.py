@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
+import utils.csv as csv
 
 def date_range_plot(data, option):
   try:    
@@ -12,6 +13,8 @@ def date_range_plot(data, option):
     if option == 'Max Temperature':
       ax.plot(data['Date'], data['Max Temperature'], label='Temperature (°C)', color='tab:red')
       ax.set_ylabel('Max Temperature')
+      if st.button("Save to CSV"):
+        csv.save_weather_data_csv(data)
     elif option == 'Precipitation':
       ax.plot(data['Date'], data['Precipitation'], label='Precipitation', color='tab:blue')
       ax.set_ylabel('Precipitation')
@@ -24,7 +27,7 @@ def date_range_plot(data, option):
       ax.set_ylabel('Temperature')
 
     ax.set_xlabel('Date')
-    plt.xticks(rotation=90)  # Rotate x-axis labels to be vertical
+    plt.xticks(rotation=45,fontsize=8)  # Rotate x-axis labels to be vertical
     ax.legend()
 
     # Display the plot 

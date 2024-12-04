@@ -3,9 +3,30 @@ from datetime import datetime, timedelta
 import utils.api_consumption as api
 import utils.plot as pl
 import utils.data_manipulation as dm
+import utils.csv as csv
 
 def init():
+    #working with csv data
+    st.title("Weather Data Visualizer with Python")
+    st.write("**Option # 1: Local CSV**")
+    uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
+    
+    if uploaded_file:
+        data = csv.read_weather_data(uploaded_file)
+        if not data.empty:
+            data = csv.clean_data(data)
+            
+            st.write("Cleaned Data:")
+            st.dataframe(data)
+            csv.plot_line(data)
+            # if st.button("Show Line Chart Temp/Humidity vs time"):
+            #     csv.plot_line(data)
+            # if st.button("Show Scatter Plot Temp vs Humidity"):
+            #     csv.plot_scatter(data)
+            
+
     # Define the options to plot
+    st.write("**Option # 2: Online**")
     option = st.selectbox(
         'Select your plot:',
         ('','Today', 'Specific Date', 'Range of dates')

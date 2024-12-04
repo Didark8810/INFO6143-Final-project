@@ -31,3 +31,10 @@ def convert_df(data, option):
                                 'Precipitation': data["daily"]["precipitation_sum"]})
         except Exception as e:
             print("data_manipulation.convert_df - Error - option 2: ", e)
+
+def rename_data_2_save(data):
+    return data.rename(columns={
+        "Max Temperature":"temperature",
+        "Date":"date",
+        "Precipitation":"humidity"
+    })
