@@ -31,6 +31,15 @@ def convert_df(data, option):
                                 'Precipitation': data["daily"]["precipitation_sum"]})
         except Exception as e:
             print("data_manipulation.convert_df - Error - option 2: ", e)
+    elif option == 3:
+        try:
+            return pd.DataFrame({'Date': data["daily"]["time"], 
+                                'Temperature': data["daily"]["temperature_2m_max"],
+                                'Feels like': data["daily"]["temperature_2m_min"], 
+                                'Humidity': data["daily"]["precipitation_sum"], 
+                                'Precipitation': data["daily"]["precipitation_sum"]})
+        except Exception as e:
+            print("data_manipulation.convert_df - Error - option 2: ", e)
 
 def rename_data_2_save(data):
     return data.rename(columns={

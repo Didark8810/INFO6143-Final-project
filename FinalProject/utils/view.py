@@ -29,19 +29,41 @@ def init():
     st.write("**Option # 2: Online**")
     option = st.selectbox(
         'Select your plot:',
-        ('','Today', 'Specific Date', 'Range of dates')
+        ('','Specific Date', 'Range of dates')
     )
 
     # 
-    if option == 'Today':
-        try:
-            data = api.get_current_weather()
-            if data:
-                data_cl = dm.data_preparation(data, 1)
-                pl.current_weather_show(data_cl)
-                #pl.current_weather_plot(data_cl)
-        except:
-            st.error("view.init - Error to get data. Please check data format (YYYY-MM-DD) or API availability.")
+    if option == 'Specific Date':
+        date_init = st.text_input("Input a date (YYYY-MM-DD):")
+        
+        
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("Today"):    
+                try:
+                    data = api.get_current_weather()
+                    if data:
+                        data_cl = dm.data_preparation(data, 1)
+                        pl.current_weather_show(data_cl)
+                        #pl.current_weather_plot(data_cl)
+                except:
+                    st.error("view.init - Error to get data. Please check data format (YYYY-MM-DD) or API availability.")
+            
+        
+            
+        with col2:
+            if st.button("Search"):
+                try:
+                    data = api.get_weather_date_range(date_init,date_init)
+                    if data:
+                        data_cl = dm.data_preparation(data, 3)
+                        pl.current_weather_show(data_cl)
+                        #pl.current_weather_plot(data_cl)
+                except:
+                    st.error("view.init - Error to get data. Please check data format (YYYY-MM-DD) or API availability.")
+        
     elif option == 'Range of dates':
         date_init = st.text_input("Input an initial date (YYYY-MM-DD):")
         date_end = st.text_input("Input a final date (YYYY-MM-DD):")
