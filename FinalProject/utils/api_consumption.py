@@ -1,6 +1,7 @@
 import requests
 
 def get_weather_date_range(start_date, end_date):
+  '''Fetches weather data for a specified date range from the Open-Meteo API.'''
   try:
     # Define the base URL for the Open-Meteo API
     base_url = "https://api.open-meteo.com/v1/forecast"
@@ -22,6 +23,7 @@ def get_weather_date_range(start_date, end_date):
     print('api_consumption.get_weather_date_range - Error in gettin data')
 
 def get_current_weather():
+  '''Fetches the current weather data from the Open-Meteo API.'''
   try:
     # Define the base URL for the Open-Meteo API
     base_url = "https://api.open-meteo.com/v1/forecast"

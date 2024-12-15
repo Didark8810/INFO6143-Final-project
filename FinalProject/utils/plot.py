@@ -4,6 +4,7 @@ import streamlit as st
 import utils.csv as csv
 
 def date_range_plot(data, option):
+  '''Displays a line plot in Streamlit for selected weather data (temperature, precipitation) over a date range.'''
   try:    
     # Streamlit app
     st.title("Weather Data")
@@ -36,6 +37,7 @@ def date_range_plot(data, option):
     print("plot.date_range_plot - Error: ", e)
 
 def current_weather_show(data):
+    '''Displays the current weather details (temperature, feels like, humidity, precipitation) in Streamlit.'''
     try:
         st.subheader("Current Weather")
         st.write(f"**Temperature:** {data['Temperature'][0]} °C")
@@ -46,6 +48,7 @@ def current_weather_show(data):
         print("plot.current_weather_show - Error: ", e)
 
 def current_weather_plot(data):
+  '''Creates a horizontal bar chart to visualize current weather metrics in Streamlit.'''
   try:
     st.subheader("Current Weather")
     metric = ['Temperature (°C)', 'Feels like (°C)', 'Humidity (%)', 'Precipitation']

@@ -3,7 +3,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import utils.data_manipulation as dm
 from datetime import datetime
+
 def read_weather_data(uploaded_file):
+    '''reads data from csv file a returns a dataframe '''
     try:
         if uploaded_file.name.endswith('.csv'):
             return pd.read_csv(uploaded_file)
@@ -17,10 +19,12 @@ def read_weather_data(uploaded_file):
 
 
 def clean_data(data):
+    '''To fill missing values (NaN or None) in the data'''
     return data.fillna({'temperature': data['temperature'].mean(),
                         'humidity': data['humidity'].mean()})
 
 def save_weather_data_csv(data):
+    '''Saves weather data as a timestamped CSV file and displays a success or error message in Streamlit.'''
     try:
         data_to_save= dm.rename_data_2_save(data)
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -30,6 +34,8 @@ def save_weather_data_csv(data):
         st.warning("file CSV NOT created, try againg or refresh the current page")
 
 def plot_scatter(data):
+    '''Displays a scatter plot of temperature vs humidity in Streamlit.'''
+    
     plt.figure(figsize=(8, 6))
     plt.scatter(data['temperature'], data['humidity'], alpha=0.6, c='blue')
     plt.xlabel('Temperature (°C)')
@@ -40,6 +46,8 @@ def plot_scatter(data):
 
 
 def plot_line(data):
+    '''Displays a line plot of temperature and humidity over time in Streamlit.'''
+    
     plt.figure(figsize=(10, 6))
     plt.plot(data['date'], data['temperature'], label='Temperature (°C)', marker='o')
     plt.plot(data['date'], data['humidity'], label='Humidity (%)', marker='x')
